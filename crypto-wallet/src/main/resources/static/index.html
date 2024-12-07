@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Wallet API Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        header {
+            background-color: #0078D7;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+        }
+        section {
+            margin: 2rem auto;
+            max-width: 900px;
+            padding: 1rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            margin-bottom: 1rem;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            color: #0078D7;
+            font-family: Consolas, Monaco, monospace;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Crypto Wallet API Documentation</h1>
+    <p>Manage your crypto assets, update prices, and analyze performance.</p>
+</header>
+
+<section>
+    <h2>Overview</h2>
+    <p>This API allows you to manage a collection of crypto assets (a wallet) with functionalities to:</p>
+    <ul>
+        <li>Add new assets to your wallet.</li>
+        <li>Update asset prices concurrently (using CoinCap API).</li>
+        <li>Retrieve the wallet summary (total value, best/worst asset performance).</li>
+        <li>Fetch all wallet history.</li>
+    </ul>
+</section>
+
+<section>
+    <h2>API Endpoints</h2>
+
+    <h3>1. Add Assets to Wallet</h3>
+    <p><strong>URL:</strong> <code>POST /api/wallet/add</code></p>
+    <p><strong>Description:</strong> Add a list of assets to the wallet.</p>
+    <p><strong>Request Body (JSON):</strong></p>
+    <pre><code>[
+  { "symbol": "BTC", "quantity": 0.12345, "price": 37870.5058 },
+  { "symbol": "ETH", "quantity": 4.89532, "price": 2004.9774 }
+]</code></pre>
+    <p><strong>Response:</strong></p>
+    <pre><code>Asset added successfully</code></pre>
+
+    <h3>2. Update Prices Concurrently</h3>
+    <p><strong>URL:</strong> <code>GET /api/wallet/update</code></p>
+    <p><strong>Description:</strong> Fetch the latest prices for all wallet assets.</p>
+    <p><strong>Response:</strong></p>
+    <pre><code>Prices updated successfully</code></pre>
+
+    <h3>3. Get Wallet Summary</h3>
+    <p><strong>URL:</strong> <code>GET /api/wallet/summary</code></p>
+    <p><strong>Description:</strong> Retrieve the wallet summary, including total value, best and worst performance.</p>
+    <p><strong>Response Example:</strong></p>
+    <pre><code>Total: 20500.50, Best Asset: BTC (5.23%), Worst Asset: ETH (-2.14%)</code></pre>
+
+    <h3>4. Get Wallet History</h3>
+    <p><strong>URL:</strong> <code>GET /api/wallet/history</code></p>
+    <p><strong>Description:</strong> Retrieve all assets stored in the wallet.</p>
+    <p><strong>Response Example:</strong></p>
+    <pre><code>[
+  { "id": 1, "symbol": "BTC", "quantity": 0.12345, "price": 37870.5058, "latestPrice": 39000.00 },
+  { "id": 2, "symbol": "ETH", "quantity": 4.89532, "price": 2004.9774, "latestPrice": 1980.50 }
+]</code></pre>
+</section>
+
+<section>
+    <h2>Testing</h2>
+    <p>You can test this API using tools like <a href="https://www.postman.com/" target="_blank">Postman</a> or <a href="https://curl.se/" target="_blank">curl</a>.</p>
+</section>
+
+<footer>
+    <p>&copy; 2024 Crypto Wallet API | Built with Spring Boot</p>
+</footer>
+</body>
+</html>

@@ -1,4 +1,4 @@
-package com.project.crypto_wallet;
+package com.project.cryptowallet;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
