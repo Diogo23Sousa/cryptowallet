@@ -1,5 +1,6 @@
 package com.project.cryptowallet.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.cryptowallet.model.WalletAsset;
 import com.project.cryptowallet.repository.WalletAssetRepository;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 @Service
@@ -91,7 +93,17 @@ public class WalletServiceImpl implements WalletService {
     }
 
     private BigDecimal parsePriceFromResponse(String response) {
-        String priceString = response.replaceAll("[^0-9.]", "");
-        return new BigDecimal(priceString).setScale(2, RoundingMode.HALF_UP);
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> responseMap = objectMapper.readValue(response, Map.class);
+
+            // Extract "data" object and get the "priceUsd" field
+            Map<String, Object> data = (Map<String, Object>) responseMap.get("data");
+            String priceUsd = (String) data.get("priceUsd");
+
+            return new BigDecimal(priceUsd).setScale(2, RoundingMode.HALF_UP);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse price from response", e);
+        }
     }
 }
