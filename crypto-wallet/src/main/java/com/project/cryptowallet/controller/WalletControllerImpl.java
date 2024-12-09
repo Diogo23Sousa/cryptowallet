@@ -1,5 +1,6 @@
 package com.project.cryptowallet.controller;
 
+import com.project.cryptowallet.dto.WalletSummaryResponse;
 import com.project.cryptowallet.model.WalletAsset;
 import com.project.cryptowallet.service.WalletService;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +34,7 @@ public class WalletControllerImpl implements WalletController {
 
     @GetMapping("/summary")
     @Override
-    public ResponseEntity<String> getWalletSummary() {
+    public ResponseEntity<WalletSummaryResponse> getWalletSummary() {
         return ResponseEntity.ok(walletService.getWalletSummary());
     }
 
@@ -41,5 +42,12 @@ public class WalletControllerImpl implements WalletController {
     @Override
     public ResponseEntity<List<WalletAsset>> getWalletHistory() {
         return ResponseEntity.ok(walletService.getWalletHistory());
+    }
+
+    @Override
+    @PostMapping("/frequency")
+    public ResponseEntity<String> setUpdateFrequency(@RequestParam long frequencyInSeconds) {
+        walletService.setUpdateFrequency(frequencyInSeconds);
+        return ResponseEntity.ok("Update frequency set to " + frequencyInSeconds + " seconds");
     }
 }

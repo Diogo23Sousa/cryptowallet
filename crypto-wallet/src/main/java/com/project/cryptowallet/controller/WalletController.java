@@ -1,10 +1,12 @@
 package com.project.cryptowallet.controller;
 
+import com.project.cryptowallet.dto.WalletSummaryResponse;
 import com.project.cryptowallet.model.WalletAsset;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -39,10 +41,10 @@ public interface WalletController {
      * - The best performing asset and its performance percentage.
      * - The worst performing asset and its performance percentage.
      *
-     * @return ResponseEntity containing the wallet summary as a JSON-formatted string.
+     * @return ResponseEntity containing the wallet summary as a structured JSON object.
      */
     @GetMapping("/summary")
-    ResponseEntity<String> getWalletSummary();
+    ResponseEntity<WalletSummaryResponse> getWalletSummary();
 
     /**
      * Retrieve all wallet assets from the database, including their current and historical state.
@@ -51,4 +53,13 @@ public interface WalletController {
      */
     @GetMapping("/history")
     ResponseEntity<List<WalletAsset>> getWalletHistory();
+
+    /**
+     * Set the frequency (in seconds) for updating wallet prices.
+     *
+     * @param frequencyInSeconds The new frequency in seconds.
+     * @return ResponseEntity with confirmation message.
+     */
+    @PostMapping("/frequency")
+    ResponseEntity<String> setUpdateFrequency(@RequestParam long frequencyInSeconds);
 }

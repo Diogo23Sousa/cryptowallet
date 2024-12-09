@@ -1,5 +1,6 @@
 package com.project.cryptowallet.service;
 
+import com.project.cryptowallet.dto.WalletSummaryResponse;
 import com.project.cryptowallet.model.WalletAsset;
 
 import java.util.List;
@@ -31,9 +32,9 @@ public interface WalletService {
      * - Best performing asset with its performance percentage.
      * - Worst performing asset with its performance percentage.
      *
-     * @return Wallet summary as a JSON-formatted string.
+     * @return WalletSummaryResponse containing wallet summary details.
      */
-    String getWalletSummary();
+    WalletSummaryResponse getWalletSummary();
 
     /**
      * Retrieve all wallet assets, including their current and historical state.
@@ -41,4 +42,11 @@ public interface WalletService {
      * @return List of WalletAsset objects.
      */
     List<WalletAsset> getWalletHistory();
+
+    /**
+     * Set the frequency (in seconds) for updating wallet prices.
+     *
+     * @param frequencyInSeconds The new frequency in seconds.
+     */
+    void setUpdateFrequency(long frequencyInSeconds);
 }

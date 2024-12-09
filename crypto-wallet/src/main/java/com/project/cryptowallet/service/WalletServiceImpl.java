@@ -1,26 +1,34 @@
 package com.project.cryptowallet.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.cryptowallet.client.CoinCapClient;
+import com.project.cryptowallet.dto.WalletSummaryResponse;
 import com.project.cryptowallet.model.WalletAsset;
 import com.project.cryptowallet.repository.WalletAssetRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 @Service
 public class WalletServiceImpl implements WalletService {
 
     private final WalletAssetRepository repository;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final CoinCapClient coinCapClient;
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private Map<String, String> symbolToIdMap = new ConcurrentHashMap<>();
+    private long frequencyInSeconds = 5; // Default frequency (30 seconds)
 
-    public WalletServiceImpl(WalletAssetRepository repository) {
+    public WalletServiceImpl(WalletAssetRepository repository, CoinCapClient coinCapClient) {
         this.repository = repository;
+        this.coinCapClient = coinCapClient;
+        refreshSymbolToIdMap(); // Load symbol-to-ID mapping on startup
+        startScheduledTask();
     }
 
     @Override
@@ -30,32 +38,65 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public void updatePricesConcurrently() {
-        List<WalletAsset> assets = repository.findAll();
-        List<? extends Future<?>> futures = assets.stream()
-                .map(asset -> executor.submit(() -> {
-                    String url = "https://api.coincap.io/v2/assets/" + asset.getSymbol().toLowerCase();
-                    try {
-                        String response = restTemplate.getForObject(url, String.class);
-                        BigDecimal latestPrice = parsePriceFromResponse(response);
-                        asset.setLatestPrice(latestPrice);
-                        repository.save(asset);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }))
-                .toList();
+        refreshSymbolToIdMap(); // Ensure latest symbol-to-ID map is loaded
 
-        futures.forEach(future -> {
+        List<WalletAsset> assets = repository.findAll();
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+        // Log the start time
+        System.out.println("Now is " + LocalDateTime.now().format(timeFormatter));
+
+        Semaphore semaphore = new Semaphore(3); // Allow only 3 tasks to run concurrently
+
+        List<Future<?>> futures = new ArrayList<>();
+
+        for (WalletAsset asset : assets) {
+            String symbol = asset.getSymbol().toUpperCase();
+            String assetId = symbolToIdMap.get(symbol);
+
+            if (assetId != null) {
+                try {
+                    semaphore.acquire(); // Acquire a permit to submit the task
+                    System.out.println("Submitted request " + symbol + " at "
+                            + LocalDateTime.now().format(timeFormatter));
+
+                    Future<?> future = executor.submit(() -> {
+                        try {
+                            BigDecimal latestPrice = coinCapClient.getLatestPrice(assetId);
+                            asset.setLatestPrice(latestPrice);
+                            repository.save(asset);
+                            System.out.println("Updated price for: " + symbol);
+                        } catch (Exception e) {
+                            System.err.println("Error updating price for: " + symbol);
+                        } finally {
+                            semaphore.release(); // Release the permit when the task is complete
+                        }
+                    });
+
+                    futures.add(future);
+
+                } catch (InterruptedException e) {
+                    System.err.println("Error submitting request for: " + symbol);
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+
+        // Wait for all tasks to complete
+        for (Future<?> future : futures) {
             try {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
-        });
+        }
+
+        System.out.println("Price update task completed.");
     }
 
+
     @Override
-    public String getWalletSummary() {
+    public WalletSummaryResponse getWalletSummary() {
         List<WalletAsset> assets = repository.findAll();
         BigDecimal totalValue = BigDecimal.ZERO;
         WalletAsset bestAsset = null, worstAsset = null;
@@ -63,6 +104,11 @@ public class WalletServiceImpl implements WalletService {
         BigDecimal worstPerformance = BigDecimal.valueOf(Double.MAX_VALUE);
 
         for (WalletAsset asset : assets) {
+            if (asset.getLatestPrice() == null) {
+                System.out.println("Skipping asset with null latest price: " + asset.getSymbol());
+                continue; // Skip this asset if latestPrice is null
+            }
+
             BigDecimal performance = asset.getLatestPrice().subtract(asset.getPrice())
                     .divide(asset.getPrice(), 4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
@@ -79,31 +125,46 @@ public class WalletServiceImpl implements WalletService {
             }
         }
 
-        return String.format(
-                "Total: %.2f, Best Asset: %s (%.2f%%), Worst Asset: %s (%.2f%%)",
-                totalValue,
-                bestAsset != null ? bestAsset.getSymbol() : "N/A", bestPerformance,
-                worstAsset != null ? worstAsset.getSymbol() : "N/A", worstPerformance
+        return new WalletSummaryResponse(
+                totalValue.setScale(2, RoundingMode.HALF_UP),
+                bestAsset != null ? bestAsset.getSymbol() : "N/A",
+                bestPerformance.compareTo(BigDecimal.valueOf(-Double.MAX_VALUE)) == 0 ? BigDecimal.ZERO : bestPerformance.setScale(2, RoundingMode.HALF_UP),
+                worstAsset != null ? worstAsset.getSymbol() : "N/A",
+                worstPerformance.compareTo(BigDecimal.valueOf(Double.MAX_VALUE)) == 0 ? BigDecimal.ZERO : worstPerformance.setScale(2, RoundingMode.HALF_UP)
         );
     }
+
 
     @Override
     public List<WalletAsset> getWalletHistory() {
         return repository.findAll();
     }
 
-    private BigDecimal parsePriceFromResponse(String response) {
+    @Override
+    public void setUpdateFrequency(long frequencyInSeconds) {
+        this.frequencyInSeconds = frequencyInSeconds;
+        scheduler.shutdownNow();
+        startScheduledTask();
+    }
+
+    private void startScheduledTask() {
+        scheduler.scheduleAtFixedRate(
+                this::updatePricesConcurrently,
+                0, frequencyInSeconds, TimeUnit.SECONDS
+        );
+        System.out.println("Scheduled task started with frequency: " + frequencyInSeconds + " seconds");
+    }
+
+    /**
+     * Refresh the symbol-to-ID map by fetching valid assets from CoinCap.
+     */
+    private void refreshSymbolToIdMap() {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> responseMap = objectMapper.readValue(response, Map.class);
-
-            // Extract "data" object and get the "priceUsd" field
-            Map<String, Object> data = (Map<String, Object>) responseMap.get("data");
-            String priceUsd = (String) data.get("priceUsd");
-
-            return new BigDecimal(priceUsd).setScale(2, RoundingMode.HALF_UP);
+            this.symbolToIdMap = coinCapClient.fetchValidAssets();
+            System.out.println("Refreshed symbol-to-ID map with " + symbolToIdMap.size() + " entries.");
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse price from response", e);
+            System.err.println("Failed to refresh symbol-to-ID map: " + e.getMessage());
+            throw new RuntimeException("Failed to fetch valid assets", e);
         }
     }
 }
