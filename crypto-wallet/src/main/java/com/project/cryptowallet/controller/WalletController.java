@@ -3,17 +3,15 @@ package com.project.cryptowallet.controller;
 import com.project.cryptowallet.dto.WalletSummaryResponse;
 import com.project.cryptowallet.model.WalletAsset;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * WalletController provides REST API endpoints for managing the crypto wallet.
- * It includes operations to add assets, update prices, retrieve the wallet summary,
- * and fetch historical data of the wallet.
+ * It includes operations to add assets, update prices, retrieve wallet summaries (current or historical),
+ * and set the price update frequency.
  */
 public interface WalletController {
 
@@ -28,7 +26,6 @@ public interface WalletController {
 
     /**
      * Update the latest prices of all assets in the wallet.
-     * Prices are fetched concurrently (with a limit of 3 concurrent threads) from the CoinCap API.
      *
      * @return ResponseEntity with a confirmation message.
      */
@@ -36,29 +33,23 @@ public interface WalletController {
     ResponseEntity<String> updatePrices();
 
     /**
-     * Retrieve a summary of the wallet including:
-     * - Total value of all assets.
-     * - The best performing asset and its performance percentage.
-     * - The worst performing asset and its performance percentage.
+     * Retrieve a wallet summary.
+     * If a timestamp is provided, fetch the historical summary for that time.
+     * Otherwise, fetch the current wallet summary.
      *
-     * @return ResponseEntity containing the wallet summary as a structured JSON object.
+     * @param timestamp Optional timestamp to fetch historical summary.
+     * @return ResponseEntity containing the wallet summary.
      */
     @GetMapping("/summary")
-    ResponseEntity<WalletSummaryResponse> getWalletSummary();
-
-    /**
-     * Retrieve all wallet assets from the database, including their current and historical state.
-     *
-     * @return ResponseEntity containing a list of WalletAsset objects.
-     */
-    @GetMapping("/history")
-    ResponseEntity<List<WalletAsset>> getWalletHistory();
+    ResponseEntity<WalletSummaryResponse> getWalletSummary(
+            @RequestParam(value = "timestamp", required = false) LocalDateTime timestamp
+    );
 
     /**
      * Set the frequency (in seconds) for updating wallet prices.
      *
      * @param frequencyInSeconds The new frequency in seconds.
-     * @return ResponseEntity with confirmation message.
+     * @return ResponseEntity with a confirmation message.
      */
     @PostMapping("/frequency")
     ResponseEntity<String> setUpdateFrequency(@RequestParam long frequencyInSeconds);

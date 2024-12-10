@@ -6,6 +6,7 @@ import com.project.cryptowallet.service.WalletService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -34,18 +35,15 @@ public class WalletControllerImpl implements WalletController {
 
     @GetMapping("/summary")
     @Override
-    public ResponseEntity<WalletSummaryResponse> getWalletSummary() {
-        return ResponseEntity.ok(walletService.getWalletSummary());
+    public ResponseEntity<WalletSummaryResponse> getWalletSummary(
+            @RequestParam(value = "timestamp", required = false) LocalDateTime timestamp) {
+
+        WalletSummaryResponse summary = walletService.getWalletSummary(timestamp);
+        return ResponseEntity.ok(summary);
     }
 
-    @GetMapping("/history")
-    @Override
-    public ResponseEntity<List<WalletAsset>> getWalletHistory() {
-        return ResponseEntity.ok(walletService.getWalletHistory());
-    }
-
-    @Override
     @PostMapping("/frequency")
+    @Override
     public ResponseEntity<String> setUpdateFrequency(@RequestParam long frequencyInSeconds) {
         walletService.setUpdateFrequency(frequencyInSeconds);
         return ResponseEntity.ok("Update frequency set to " + frequencyInSeconds + " seconds");

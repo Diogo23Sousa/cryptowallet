@@ -7,8 +7,7 @@ import java.math.BigDecimal;
 @Entity
 public class WalletAsset {
 
-    public WalletAsset() {
-    }
+    public WalletAsset() {}
 
     public WalletAsset(BigDecimal price, Long id, String symbol, BigDecimal quantity, BigDecimal latestPrice) {
         this.price = price;

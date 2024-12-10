@@ -3,111 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Wallet API Documentation</title>
+    <title>Crypto Wallet API</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            background: #f4f4f9;
             color: #333;
         }
         header {
             background-color: #0078D7;
             color: #fff;
             text-align: center;
-            padding: 1rem;
+            padding: 1.5rem 1rem;
         }
         section {
-            margin: 2rem auto;
-            max-width: 900px;
-            padding: 1rem;
-            background-color: #fff;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
             border-radius: 8px;
+            max-width: 1000px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        h1, h2, h3 {
-            margin-bottom: 1rem;
+        h1, h3 {
+            margin: 0;
+            padding-bottom: 10px;
         }
-        pre {
-            background-color: #f4f4f4;
-            padding: 1rem;
+        p {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        textarea, input, button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #0078D7;
+            color: white;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+        button:hover {
+            background: #005ea6;
+        }
+        .response-box {
+            margin-top: 10px;
+            background: #f4f4f4;
+            padding: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            overflow-x: auto;
-        }
-        code {
-            color: #0078D7;
-            font-family: Consolas, Monaco, monospace;
+            white-space: pre-wrap;
+            font-family: "Courier New", Courier, monospace;
         }
         footer {
             text-align: center;
-            margin-top: 2rem;
+            margin: 20px 0;
             font-size: 0.9rem;
+            color: #666;
         }
     </style>
 </head>
 <body>
+
 <header>
-    <h1>Crypto Wallet API Documentation</h1>
-    <p>Manage your crypto assets, update prices, and analyze performance.</p>
+    <h1>Crypto Wallet API</h1>
 </header>
 
 <section>
-    <h2>Overview</h2>
-    <p>This API allows you to manage a collection of crypto assets (a wallet) with functionalities to:</p>
-    <ul>
-        <li>Add new assets to your wallet.</li>
-        <li>Update asset prices concurrently (using CoinCap API).</li>
-        <li>Retrieve the wallet summary (total value, best/worst asset performance).</li>
-        <li>Fetch all wallet history.</li>
-    </ul>
+    <h3>Add Assets</h3>
+    <p>Add multiple crypto assets to your wallet:</p>
+    <label for="assetInput"></label><textarea id="assetInput" rows="8">[
+    { "symbol": "BTC", "quantity": 0.123, "price": 40000 },
+    { "symbol": "ETH", "quantity": 1.5, "price": 2500 },
+    { "symbol": "DOGE", "quantity": 10000, "price": 0.123 },
+    { "symbol": "ADA", "quantity": 2500, "price": 1.20 },
+    { "symbol": "XRP", "quantity": 3000, "price": 0.50 }
+]</textarea>
+    <button onclick="sendPost('/api/wallet/add', 'assetInput', 'addResponse')">Add Assets</button>
+    <div class="response-box" id="addResponse"></div>
 </section>
 
 <section>
-    <h2>API Endpoints</h2>
-
-    <h3>1. Add Assets to Wallet</h3>
-    <p><strong>URL:</strong> <code>POST /api/wallet/add</code></p>
-    <p><strong>Description:</strong> Add a list of assets to the wallet.</p>
-    <p><strong>Request Body (JSON):</strong></p>
-    <pre><code>[
-  { "symbol": "BTC", "quantity": 0.12345, "price": 37870.5058 },
-  { "symbol": "ETH", "quantity": 4.89532, "price": 2004.9774 }
-]</code></pre>
-    <p><strong>Response:</strong></p>
-    <pre><code>Asset added successfully</code></pre>
-
-    <h3>2. Update Prices Concurrently</h3>
-    <p><strong>URL:</strong> <code>GET /api/wallet/update</code></p>
-    <p><strong>Description:</strong> Fetch the latest prices for all wallet assets.</p>
-    <p><strong>Response:</strong></p>
-    <pre><code>Prices updated successfully</code></pre>
-
-    <h3>3. Get Wallet Summary</h3>
-    <p><strong>URL:</strong> <code>GET /api/wallet/summary</code></p>
-    <p><strong>Description:</strong> Retrieve the wallet summary, including total value, best and worst performance.</p>
-    <p><strong>Response Example:</strong></p>
-    <pre><code>Total: 20500.50, Best Asset: BTC (5.23%), Worst Asset: ETH (-2.14%)</code></pre>
-
-    <h3>4. Get Wallet History</h3>
-    <p><strong>URL:</strong> <code>GET /api/wallet/history</code></p>
-    <p><strong>Description:</strong> Retrieve all assets stored in the wallet.</p>
-    <p><strong>Response Example:</strong></p>
-    <pre><code>[
-  { "id": 1, "symbol": "BTC", "quantity": 0.12345, "price": 37870.5058, "latestPrice": 39000.00 },
-  { "id": 2, "symbol": "ETH", "quantity": 4.89532, "price": 2004.9774, "latestPrice": 1980.50 }
-]</code></pre>
+    <h3>Update Prices</h3>
+    <p>Fetch the latest prices for all wallet assets:</p>
+    <button onclick="sendGet('/api/wallet/update', 'updateResponse')">Update Prices</button>
+    <div class="response-box" id="updateResponse"></div>
 </section>
 
 <section>
-    <h2>Testing</h2>
-    <p>You can test this API using tools like <a href="https://www.postman.com/" target="_blank">Postman</a> or <a href="https://curl.se/" target="_blank">curl</a>.</p>
+    <h3>Get Wallet Summary</h3>
+    <p>Retrieve the wallet summary. Optionally, provide a timestamp (ISO format) for historical summaries:</p>
+    <label for="timestampInput"></label><input type="text" id="timestampInput" />
+    <button onclick="sendGet('/api/wallet/summary' + buildQuery('timestampInput'), 'summaryResponse')">Get Summary</button>
+    <div class="response-box" id="summaryResponse"></div>
+</section>
+
+<section>
+    <h3>Set Update Frequency</h3>
+    <p>Set how frequently the wallet prices should update (in seconds):</p>
+    <label for="frequencyInput"></label><input type="number" id="frequencyInput" placeholder="Enter frequency in seconds">
+    <button onclick="sendPost('/api/wallet/frequency?frequencyInSeconds=' + document.getElementById('frequencyInput').value, null, 'frequencyResponse')">Set Frequency</button>
+    <div class="response-box" id="frequencyResponse"></div>
+</section>
+
+<section>
+    <h3>H2 Database Console</h3>
+    <p>Access the <strong>H2 Database Console</strong> to view wallet data:</p>
+    <a href="/h2-console" target="_blank">
+        <button>Go to H2 Console</button>
+    </a>
 </section>
 
 <footer>
-    <p>&copy; 2024 Crypto Wallet API | Built with Spring Boot</p>
+    &copy; 2024 Crypto Wallet API | Built with Spring Boot and H2 Database
 </footer>
+
+<script>
+    // Set placeholder for current date in "Get Wallet Summary"
+    document.addEventListener("DOMContentLoaded", () => {
+        const timestampInput = document.getElementById("timestampInput");
+        const now = new Date();
+        timestampInput.placeholder = now.toISOString().slice(0, 19);
+    });
+
+    async function sendPost(url, inputId, responseId) {
+        const responseBox = document.getElementById(responseId);
+        const data = inputId ? document.getElementById(inputId).value : null;
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: data
+            });
+            const result = await response.text();
+            formatResponse(response, result, responseBox);
+        } catch (err) {
+            responseBox.textContent = "Error: " + err.message;
+        }
+    }
+
+    async function sendGet(url, responseId) {
+        const responseBox = document.getElementById(responseId);
+        try {
+            const response = await fetch(url);
+            const result = await response.text();
+            formatResponse(response, result, responseBox);
+        } catch (err) {
+            responseBox.textContent = "Error: " + err.message;
+        }
+    }
+
+    function formatResponse(response, result, responseBox) {
+        try {
+            const json = JSON.parse(result);
+            responseBox.textContent = JSON.stringify(json, null, 2);
+        } catch (e) {
+            responseBox.textContent = `Status: ${response.status}\n${result}`;
+        }
+    }
+
+    function buildQuery(inputId) {
+        const value = document.getElementById(inputId).value;
+        return value ? `?timestamp=${value}` : '';
+    }
+</script>
 </body>
 </html>
