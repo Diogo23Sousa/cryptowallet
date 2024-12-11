@@ -20,44 +20,23 @@ public class WalletSummaryResponse {
         this.worstPerformance = worstPerformance;
     }
 
-    // Getters and Setters
-    public BigDecimal getTotalValue() {
-        return totalValue;
-    }
+    public BigDecimal getTotalValue() { return totalValue; }
 
-    public void setTotalValue(BigDecimal totalValue) {
-        this.totalValue = totalValue;
-    }
+    public void setTotalValue(BigDecimal totalValue) { this.totalValue = totalValue; }
 
-    public String getBestAsset() {
-        return bestAsset;
-    }
+    public String getBestAsset() { return bestAsset; }
 
-    public void setBestAsset(String bestAsset) {
-        this.bestAsset = bestAsset;
-    }
+    public void setBestAsset(String bestAsset) { this.bestAsset = bestAsset; }
 
-    public BigDecimal getBestPerformance() {
-        return bestPerformance;
-    }
+    public BigDecimal getBestPerformance() { return bestPerformance; }
 
-    public void setBestPerformance(BigDecimal bestPerformance) {
-        this.bestPerformance = bestPerformance;
-    }
+    public void setBestPerformance(BigDecimal bestPerformance) { this.bestPerformance = bestPerformance; }
 
-    public String getWorstAsset() {
-        return worstAsset;
-    }
+    public String getWorstAsset() { return worstAsset; }
 
-    public void setWorstAsset(String worstAsset) {
-        this.worstAsset = worstAsset;
-    }
+    public void setWorstAsset(String worstAsset) { this.worstAsset = worstAsset; }
 
-    public BigDecimal getWorstPerformance() {
-        return worstPerformance;
-    }
+    public BigDecimal getWorstPerformance() { return worstPerformance; }
 
-    public void setWorstPerformance(BigDecimal worstPerformance) {
-        this.worstPerformance = worstPerformance;
-    }
+    public void setWorstPerformance(BigDecimal worstPerformance) { this.worstPerformance = worstPerformance; }
 }

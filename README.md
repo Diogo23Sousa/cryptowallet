@@ -1,4 +1,3 @@
-
 # **Crypto Wallet API**
 
 A simple **Spring Boot** application to manage a cryptocurrency wallet, update asset prices, and retrieve wallet summaries.
@@ -37,6 +36,8 @@ The **API documentation** is available at:
 
 ## **Getting Started**
 
+### **Run with Maven**
+
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/Diogo23Sousa/cryptowallet.git
@@ -58,6 +59,20 @@ The **API documentation** is available at:
    http://localhost:8080
    ```
 
+### **Run with Docker**
+
+1. **Ensure Docker and Docker Compose are installed**.
+
+2. **Build and start the container**:
+   ```bash
+   docker-compose up --build
+   ```
+
+3. Access the API documentation:
+   ```
+   http://localhost:8080
+   ```
+
 ---
 
 ## **H2 Database Console**
@@ -74,25 +89,12 @@ To view the database data:
 
 ---
 
-## **Testing**
+## **Logs**
 
-Run the tests using Maven:
-
-```bash
-mvn test
+Logs are saved to the following file when running the application:
 ```
-
----
-
-## **Contributing**
-
-Contributions are welcome! Please fork the repository and open a pull request.
-
----
-
-## **License**
-
-This project is licensed under the MIT License.
+logs/app.log
+```
 
 ---
 

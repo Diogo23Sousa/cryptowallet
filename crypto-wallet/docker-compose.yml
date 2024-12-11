@@ -1,0 +1,35 @@
+services:
+  crypto-wallet-app:
+    build: .
+    container_name: crypto-wallet-app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_APPLICATION_NAME=crypto-wallet
+      - SERVER_PORT=8080
+
+      # Logging
+      - LOGGING_LEVEL_ROOT=INFO
+      - LOGGING_LEVEL_COM_EXAMPLE=DEBUG
+      - LOGGING_FILE_NAME=logs/app.log
+      - LOGGING_FILE_PATH=logs
+
+      # H2 Database Configuration
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:crypto_wallet_db
+      - SPRING_DATASOURCE_DRIVERCLASSNAME=org.h2.Driver
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_H2_CONSOLE_ENABLED=true
+      - SPRING_H2_CONSOLE_PATH=/h2-console
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.H2Dialect
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=INFO
+
+      # CoinCap API Base URL
+      - COINCAP_API_BASE_URL=https://api.coincap.io/v2
+
+      # Price Update Frequency
+      - PRICE_UPDATE_FREQUENCY=10
+
+    volumes:
+      - ./logs:/app/logs

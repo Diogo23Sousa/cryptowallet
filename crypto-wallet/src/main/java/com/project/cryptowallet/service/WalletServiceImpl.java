@@ -130,7 +130,6 @@ public class WalletServiceImpl implements WalletService {
                 semaphore.acquire();
                 logger.info("Submitted request to update {} at {}", symbol, LocalDateTime.now());
 
-                // Simulate API call and processing
                 BigDecimal latestPrice = coinCapClient.getLatestPrice(assetId);
                 asset.setLatestPrice(latestPrice);
 

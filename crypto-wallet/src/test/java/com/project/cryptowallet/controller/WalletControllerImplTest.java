@@ -3,7 +3,8 @@ package com.project.cryptowallet.controller;
 import com.project.cryptowallet.dto.WalletSummaryResponse;
 import com.project.cryptowallet.model.WalletAsset;
 import com.project.cryptowallet.service.WalletService;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
 import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
 
@@ -16,12 +17,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpStatus.OK;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class WalletControllerImplTest {
 
     private final WalletService walletService = Mockito.mock(WalletService.class);
     private final WalletControllerImpl walletController = new WalletControllerImpl(walletService);
 
     @Test
+    @Order(1)
+    @DisplayName("1. Add Assets to Wallet") // Display name
     void testAddAssets() {
         List<WalletAsset> assets = Arrays.asList(
                 new WalletAsset(new BigDecimal("40000"), null, "BTC", new BigDecimal("0.5"), null)
@@ -34,6 +38,8 @@ class WalletControllerImplTest {
     }
 
     @Test
+    @Order(2)
+    @DisplayName("2. Update Asset Prices")
     void testUpdatePrices() {
         ResponseEntity<String> response = walletController.updatePrices();
         assertEquals(OK, response.getStatusCode());
@@ -42,6 +48,8 @@ class WalletControllerImplTest {
     }
 
     @Test
+    @Order(3)
+    @DisplayName("3. Get Current Wallet Summary")
     void testGetWalletSummaryCurrent() {
         WalletSummaryResponse mockSummary = new WalletSummaryResponse(
                 new BigDecimal("20000"), "BTC", new BigDecimal("5.0"), "ETH", new BigDecimal("1.2")
@@ -55,6 +63,8 @@ class WalletControllerImplTest {
     }
 
     @Test
+    @Order(4)
+    @DisplayName("4. Get Historical Wallet Summary")
     void testGetWalletSummaryHistorical() {
         LocalDateTime timestamp = LocalDateTime.now();
         WalletSummaryResponse mockSummary = new WalletSummaryResponse(
@@ -69,6 +79,8 @@ class WalletControllerImplTest {
     }
 
     @Test
+    @Order(5)
+    @DisplayName("5. Set Update Frequency")
     void testSetUpdateFrequency() {
         long frequency = 10L;
         ResponseEntity<String> response = walletController.setUpdateFrequency(frequency);

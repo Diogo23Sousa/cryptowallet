@@ -29,43 +29,23 @@ public class WalletAsset {
 
     private BigDecimal latestPrice;
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setId(Long id) { this.id = id; }
 
-    public String getSymbol() {
-        return symbol;
-    }
+    public String getSymbol() { return symbol; }
 
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
-    }
+    public void setSymbol(String symbol) { this.symbol = symbol; }
 
-    public BigDecimal getQuantity() {
-        return quantity;
-    }
+    public BigDecimal getQuantity() { return quantity; }
 
-    public void setQuantity(BigDecimal quantity) {
-        this.quantity = quantity;
-    }
+    public void setQuantity(BigDecimal quantity) { this.quantity = quantity; }
 
-    public BigDecimal getPrice() {
-        return price;
-    }
+    public BigDecimal getPrice() { return price; }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
+    public void setPrice(BigDecimal price) { this.price = price; }
 
-    public BigDecimal getLatestPrice() {
-        return latestPrice;
-    }
+    public BigDecimal getLatestPrice() { return latestPrice;}
 
-    public void setLatestPrice(BigDecimal latestPrice) {
-        this.latestPrice = latestPrice;
-    }
+    public void setLatestPrice(BigDecimal latestPrice) { this.latestPrice = latestPrice;}
 }
