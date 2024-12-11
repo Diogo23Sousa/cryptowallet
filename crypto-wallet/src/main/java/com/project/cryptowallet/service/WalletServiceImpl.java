@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -56,78 +56,46 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public void updatePricesConcurrently() {
-        logger.info("Starting price update process.");
+        logger.info("Starting price update process at {}", LocalDateTime.now());
         refreshSymbolToIdMap();
 
         List<WalletAsset> assets = walletAssetRepository.findAll();
+
+        // Limit concurrency to 3 threads using Semaphore
         Semaphore semaphore = new Semaphore(3);
-        List<Future<?>> futures = new ArrayList<>();
+        List<CompletableFuture<Void>> futures = assets.stream()
+                .map(asset -> processAssetPriceUpdate(asset, semaphore))
+                .collect(Collectors.toList());
 
-        for (WalletAsset asset : assets) {
-            String symbol = asset.getSymbol().toUpperCase();
-            String assetId = symbolToIdMap.get(symbol);
+        // Wait for all tasks to complete
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-            if (assetId != null) {
-                try {
-                    semaphore.acquire();
-                    Future<?> future = executor.submit(() -> {
-                        try {
-                            BigDecimal latestPrice = coinCapClient.getLatestPrice(assetId);
-                            asset.setLatestPrice(latestPrice);
-
-                            WalletAssetHistory history = new WalletAssetHistory(
-                                    asset.getSymbol(), latestPrice, LocalDateTime.now(), asset
-                            );
-                            walletAssetHistoryRepository.save(history);
-                            walletAssetRepository.save(asset);
-
-                            logger.info("Updated price for {}: ${}", symbol, latestPrice);
-                        } catch (Exception e) {
-                            logger.error("Error updating price for {}: {}", symbol, e.getMessage(), e);
-                        } finally {
-                            semaphore.release();
-                        }
-                    });
-
-                    futures.add(future);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    logger.error("Error acquiring semaphore for {}", symbol, e);
-                }
-            }
-        }
-
-        for (Future<?> future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                logger.error("Error in price update task", e);
-            }
-        }
-
-        logger.info("Price update process completed.");
+        logger.info("Price update process completed at {}", LocalDateTime.now());
     }
+
 
     @Override
     public WalletSummaryResponse getWalletSummary(LocalDateTime timestamp) {
-        logger.info("Generating wallet summary...");
+        logger.info("Starting wallet summary generation at {}", LocalDateTime.now());
+
+        // Step 1: Wait for all price updates to complete
+        updatePricesConcurrently();
+
+        // Step 2: Fetch all updated assets
         List<WalletAsset> assets = walletAssetRepository.findAll();
 
-        // Aggregate by symbol and calculate quantities
-        Map<String, BigDecimal> totalQuantities = assets.stream()
-                .collect(Collectors.groupingBy(
-                        WalletAsset::getSymbol,
-                        Collectors.reducing(BigDecimal.ZERO, WalletAsset::getQuantity, BigDecimal::add)
-                ));
-
+        // Step 3: Calculate total wallet value and aggregate quantities
         BigDecimal totalValue = BigDecimal.ZERO;
+        Map<String, BigDecimal> totalQuantities = new HashMap<>();
 
         for (WalletAsset asset : assets) {
             BigDecimal price = asset.getLatestPrice() != null ? asset.getLatestPrice() : BigDecimal.ZERO;
             totalValue = totalValue.add(price.multiply(asset.getQuantity()));
+
+            totalQuantities.merge(asset.getSymbol(), asset.getQuantity(), BigDecimal::add);
         }
 
-        logger.info("Total wallet value: ${}", totalValue);
+        logger.info("Total wallet value: ${}", totalValue.setScale(2, RoundingMode.HALF_UP));
         totalQuantities.forEach((symbol, quantity) ->
                 logger.info("Symbol: {}, Total Quantity: {}", symbol, quantity));
 
@@ -136,6 +104,7 @@ public class WalletServiceImpl implements WalletService {
                 "N/A", BigDecimal.ZERO, "N/A", BigDecimal.ZERO
         );
     }
+
 
     @Override
     public void setUpdateFrequency(long frequencyInSeconds) {
@@ -146,6 +115,41 @@ public class WalletServiceImpl implements WalletService {
         scheduler = Executors.newScheduledThreadPool(1);
         startScheduledTask();
     }
+
+    private CompletableFuture<Void> processAssetPriceUpdate(WalletAsset asset, Semaphore semaphore) {
+        return CompletableFuture.runAsync(() -> {
+            String symbol = asset.getSymbol().toUpperCase();
+            String assetId = symbolToIdMap.get(symbol);
+
+            if (assetId == null) {
+                logger.warn("No asset ID found for symbol: {}", symbol);
+                return;
+            }
+
+            try {
+                semaphore.acquire();
+                logger.info("Submitted request to update {} at {}", symbol, LocalDateTime.now());
+
+                // Simulate API call and processing
+                BigDecimal latestPrice = coinCapClient.getLatestPrice(assetId);
+                asset.setLatestPrice(latestPrice);
+
+                WalletAssetHistory history = new WalletAssetHistory(
+                        asset.getSymbol(), latestPrice, LocalDateTime.now(), asset
+                );
+
+                walletAssetHistoryRepository.save(history);
+                walletAssetRepository.save(asset);
+
+                logger.info("Successfully updated price for {}: ${} at {}", symbol, latestPrice, LocalDateTime.now());
+            } catch (Exception e) {
+                logger.error("Error updating price for {}: {}", symbol, e.getMessage(), e);
+            } finally {
+                semaphore.release();
+            }
+        }, executor);
+    }
+
 
     private void startScheduledTask() {
         scheduler.scheduleAtFixedRate(this::updatePricesConcurrently, 0, frequencyInSeconds, TimeUnit.SECONDS);

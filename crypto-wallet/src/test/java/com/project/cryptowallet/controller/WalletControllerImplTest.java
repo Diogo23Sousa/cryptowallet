@@ -42,7 +42,7 @@ class WalletControllerImplTest {
     }
 
     @Test
-    void testGetWalletSummary_Current() {
+    void testGetWalletSummaryCurrent() {
         WalletSummaryResponse mockSummary = new WalletSummaryResponse(
                 new BigDecimal("20000"), "BTC", new BigDecimal("5.0"), "ETH", new BigDecimal("1.2")
         );
@@ -55,7 +55,7 @@ class WalletControllerImplTest {
     }
 
     @Test
-    void testGetWalletSummary_Historical() {
+    void testGetWalletSummaryHistorical() {
         LocalDateTime timestamp = LocalDateTime.now();
         WalletSummaryResponse mockSummary = new WalletSummaryResponse(
                 new BigDecimal("18000"), "ETH", new BigDecimal("4.5"), "DOGE", new BigDecimal("0.8")

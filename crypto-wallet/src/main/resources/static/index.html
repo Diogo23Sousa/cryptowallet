@@ -99,10 +99,18 @@
 <section>
     <h3>Get Wallet Summary</h3>
     <p>Retrieve the wallet summary. Optionally, provide a timestamp (ISO format) for historical summaries:</p>
-    <label for="timestampInput"></label><input type="text" id="timestampInput" />
+    <label for="timestampInput"></label>
+    <input type="text" id="timestampInput" value="" />
     <button onclick="sendGet('/api/wallet/summary' + buildQuery('timestampInput'), 'summaryResponse')">Get Summary</button>
     <div class="response-box" id="summaryResponse"></div>
 </section>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const timestampInput = document.getElementById("timestampInput");
+        const now = new Date();
+        timestampInput.value = now.toISOString().slice(0, 19);
+    });
+</script>
 
 <section>
     <h3>Set Update Frequency</h3>
